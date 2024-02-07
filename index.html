@@ -15,7 +15,7 @@ body { margin: 0; padding: 0; }
 <div id="map"></div>
  
 <script>
-	mapboxgl.accessToken = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JnajIzMGZsNzJpcGM4b3l5OWttaCJ9.1GzkF8EERgQ5u1jkmP3C7w';
+  mapboxgl.accessToken = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JnajIzMGZsNzJpcGM4b3l5OWttaCJ9.1GzkF8EERgQ5u1jkmP3C7w';
 const map = new mapboxgl.Map({
 container: 'map',
 // style: 'mapbox://styles/mapbox/satellite-streets-v11',
@@ -69,6 +69,49 @@ map.on('load', async () => {
         'blue' // Default color
       ],
       'circle-opacity': 0.5 // Set opacity to 0.5
+    }
+  });
+
+  // Generate random lines from green circles
+  forecastData.coordinates.forEach(coordinate => {
+    const [longitude, latitude, intensity] = coordinate;
+    
+    if (intensity > 2) { // For green circles only
+      const lineCoordinates = [];
+      const numLines = Math.floor(Math.random() * 5) + 1; // Random number of lines (1 to 5)
+      
+      for (let i = 0; i < numLines; i++) {
+        const randomAltitude = Math.floor(Math.random() * 590000) + 10000; // Random altitude between 10km and 600km
+        lineCoordinates.push([
+          longitude,
+          latitude,
+          randomAltitude
+        ]);
+      }
+      
+      map.addLayer({
+        id: 'aurora-lines-' + longitude + '-' + latitude,
+        type: 'line',
+        source: {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: lineCoordinates
+            }
+          }
+        },
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': 'green',
+          'line-width': 1
+        }
+      });
     }
   });
 });
