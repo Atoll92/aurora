@@ -11,6 +11,27 @@
 <style>
 body { margin: 0; padding: 0; }
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+/* Define the glowing effect */
+.glowing-circle {
+    animation: glowing-animation 1s infinite alternate;
+}
+.mapboxgl-ctrl-bottom-right {
+  display: none;
+}
+.mapboxgl-ctrl-bottom-left {
+  display: none;
+ 
+}
+
+@keyframes glowing-animation {
+    from {
+        opacity: 0.8;
+    }
+    to {
+       
+        opacity: 0;
+    }
+  }
 </style>
 </head>
 <body>
@@ -29,7 +50,7 @@ const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/dark-v9',
     // zoom: 1.5,
-    zoom: 1.2,
+    zoom: 0.8,
 			pitch: 50,
     center: origin,
     projection: 'globe'
@@ -140,6 +161,7 @@ map.on('load', async () => {
                 '#4fafcd' // Default color
             ],
             'circle-opacity': 0.5 // Set opacity to 0.5
+       
         }
     });
 
