@@ -27,7 +27,7 @@ var origin = [40.7128,74.006];
 
 const map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/satellite-v9',
+    style: 'mapbox://styles/mapbox/dark-v9',
     // zoom: 1.5,
     zoom: 17,
 			pitch: 60,
@@ -164,7 +164,7 @@ map.on('load', async () => {
 					);
 
 					//instantiate a red sphere and position it at the origin lnglat
-					var sphere = tb.sphere({color: 'red', material: 'MeshToonMaterial'})
+					var sphere = tb.sphere({color: 'red', material: 'MeshToonMaterial', scale: '{ x: 1000, y: 1000, z: 1000 }'})
 						.setCoords(origin);
 					sphere.addEventListener('ObjectMouseOver', onObjectMouseOver, false);
 					sphere.addEventListener('ObjectMouseOut', onObjectMouseOut, false);
