@@ -2,120 +2,262 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Display a globe on a webpage</title>
+<title>Display lines originating from green circles</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js"></script>
+
+<script src="config.js"></script>
 <style>
 body { margin: 0; padding: 0; }
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
 </style>
 </head>
 <body>
-<div id="map"></div>
+  <script src="https://cdn.jsdelivr.net/gh/jscastro76/threebox@v.2.2.2/dist/threebox.min.js" type="text/javascript"></script>
+<link href="https://cdn.jsdelivr.net/gh/jscastro76/threebox@v.2.2.2/dist/threebox.css" rel="stylesheet">
+<div id="map" class="map"></div>
  
-<script>
-  mapboxgl.accessToken = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JnajIzMGZsNzJpcGM4b3l5OWttaCJ9.1GzkF8EERgQ5u1jkmP3C7w';
+<script type="module">
+mapboxgl.accessToken = 'pk.eyJ1IjoiZGdjb2Jvc3MiLCJhIjoiY2xzY2JnajIzMGZsNzJpcGM4b3l5OWttaCJ9.1GzkF8EERgQ5u1jkmP3C7w';
+
+//starting location for both map and eventual sphere
+var origin = [40.7128,74.006];
+
+
 const map = new mapboxgl.Map({
-container: 'map',
-// style: 'mapbox://styles/mapbox/satellite-streets-v11',
-style: 'mapbox://styles/mapbox/satellite-v9',
-zoom: 1.5,
-center: [0, 0],
-projection: 'globe'
+    container: 'map',
+    style: 'mapbox://styles/mapbox/satellite-v9',
+    // zoom: 1.5,
+    zoom: 17,
+			pitch: 60,
+    center: origin,
+    projection: 'globe'
 });
+
+let stats;
+		import Stats from 'https://threejs.org/examples/jsm/libs/stats.module.js';
+		function animate() {
+			requestAnimationFrame(animate);
+			stats.update();
+		}
+
+// eslint-disable-next-line no-undef
+// const tb = (window.tb = new Threebox(
+// map,
+// map.getCanvas().getContext('webgl'),
+// {
+// defaultLights: true
+// }
+// ));
+// this.tb = new Threebox(map, mbxContext, options);
+// window.tb = this.tb;
+
 
 map.on('load', async () => {
-  const response = await fetch('https://services.swpc.noaa.gov/json/ovation_aurora_latest.json');
-  const forecastData = await response.json();
-  map.setFog({});
-  
-  // Add a custom layer for the markers with altitude
-  map.addLayer({
-    id: 'aurora-markers',
-    type: 'circle',
-    source: {
-      type: 'geojson',
-      data: {
-        type: 'FeatureCollection',
-        features: forecastData.coordinates.map(coordinate => ({
-          type: 'Feature',
-          properties: {
-            intensity: coordinate[2] // Adding intensity property to each feature
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: [coordinate[0], coordinate[1], 400000]
-          }
-        }))
-      }
-    },
-    
-    paint: {
-      'circle-radius': [
-        'match',
-        ['get', 'intensity'],
-        1, 1,
-        2, 2,
-        3, 3,
-        1 // Default radius
-      ],
-      'circle-color': [
-        'match',
-        ['get', 'intensity'],
-        1, 'blue',
-        2, 'red',
-        [3,4], 'green',
-        'blue' // Default color
-      ],
-      'circle-opacity': 0.5 // Set opacity to 0.5
-    }
-  });
+    const response = await fetch('https://services.swpc.noaa.gov/json/ovation_aurora_latest.json');
+    const forecastData = await response.json();
+    map.setFog({});
 
-  // Generate random lines from green circles
-  // forecastData.coordinates.forEach(coordinate => {
-  //   const [longitude, latitude, intensity] = coordinate;
-    
-  //   if (intensity > 2) { // For green circles only
-  //     const lineCoordinates = [];
-  //     // const numLines = Math.floor(Math.random() * 5) + 1; // Random number of lines (1 to 5)
-  //     const numLines = 2;
+// Add Threebox layer
+// const tb = new Threebox(
+//         map,
+//         map.getCanvas().getContext('webgl'),
+//         {
+//             defaultLights: true,
+//             enableSelectingObjects: true
+//         }
+//     );
 
-  //     for (let i = 0; i < numLines; i++) {
-  //       const randomAltitude = Math.floor(Math.random() * 590000) + 10000; // Random altitude between 10km and 600km
-  //       lineCoordinates.push([
-  //         longitude,
-  //         latitude,
-  //         randomAltitude
-  //       ]);
-  //     }
-      
-  //     map.addLayer({
-  //       id: 'aurora-lines-' + longitude + '-' + latitude,
-  //       type: 'line',
-  //       source: {
-  //         type: 'geojson',
-  //         data: {
-  //           type: 'Feature',
-  //           properties: {},
-  //           geometry: {
-  //             type: 'LineString',
-  //             coordinates: lineCoordinates
-  //           }
-  //         }
-  //       },
-  //       layout: {
-  //         'line-join': 'round',
-  //         'line-cap': 'round'
-  //       },
-  //       paint: {
-  //         'line-color': 'green',
-  //         'line-width': 1
-  //       }
-  //     });
-  //   }
-  // });
+    // map.addLayer({
+    //     id: 'custom_layer',
+    //     type: 'custom',
+    //     renderingMode: '3d',
+    //     onAdd: function (map, mbxContext) {
+    //         const lines = [];
+    //         forecastData.coordinates.forEach(coordinate => {
+    //             const [longitude, latitude, intensity] = coordinate;
+    //             if (intensity > 2) { // For green circles only
+    //                 const lineCoordinates = [];
+    //                 const numLines = 1; // Fixed number of lines for simplicity
+    //                 for (let i = 0; i < numLines; i++) {
+    //                     const randomAltitude = Math.floor(Math.random() * 590000) + 10000; // Random altitude between 10km and 600km
+    //                     lineCoordinates.push([longitude, latitude, randomAltitude]);
+    //                 }
+    //                 lines.push(lineCoordinates);
+    //             }
+    //         });
+
+    //         lines.forEach(lineCoords => {
+    //             const lineOptions = {
+    //                 geometry: lineCoords,
+    //                 color: 0x00ff00, // Green color
+    //                 width: 2 // Width of the line
+    //             };
+    //             const lineMesh = tb.line(lineOptions);
+    //             tb.add(lineMesh);
+    //         });
+    //     },
+    //     render: function (gl, matrix) {
+    //         tb.update();
+    //     }
+    // });
+    // Add a custom layer for the markers with altitude
+    map.addLayer({
+        id: 'aurora-markers',
+        type: 'circle',
+        source: {
+            type: 'geojson',
+            data: {
+                type: 'FeatureCollection',
+                features: forecastData.coordinates.map(coordinate => ({
+                    type: 'Feature',
+                    properties: {
+                        intensity: coordinate[2] // Adding intensity property to each feature
+                    },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [coordinate[0], coordinate[1]]
+                    }
+                }))
+            }
+        },
+        paint: {
+            'circle-radius': [
+                'match',
+                ['get', 'intensity'],
+                1, 1,
+                2, 2,
+                3, 3,
+                1 // Default radius
+            ],
+            'circle-color': [
+                'match',
+                ['get', 'intensity'],
+                1, 'blue',
+                2, 'red',
+                [3, 4], 'green',
+                'blue' // Default color
+            ],
+            'circle-opacity': 0.5 // Set opacity to 0.5
+        }
+    });
+
+    stats = new Stats();
+			map.getContainer().appendChild(stats.dom);
+			animate();
+
+			map.addLayer({
+				id: 'custom_layer',
+				type: 'custom',
+				renderingMode: '3d',
+				onAdd: function(map, mbxContext){
+
+					// instantiate threebox
+					window.tb = new Threebox(
+						map, 
+						mbxContext,
+						{
+							defaultLights: true,
+							enableSelectingObjects: true
+						}
+					);
+
+					//instantiate a red sphere and position it at the origin lnglat
+					var sphere = tb.sphere({color: 'red', material: 'MeshToonMaterial'})
+						.setCoords(origin);
+					sphere.addEventListener('ObjectMouseOver', onObjectMouseOver, false);
+					sphere.addEventListener('ObjectMouseOut', onObjectMouseOut, false);
+					// add sphere to the scene
+					tb.add(sphere);
+
+				},
+				
+				render: function (gl, matrix) {
+					tb.update();
+				}
+			})
+
+  // Create lines originating from green circles
+//   forecastData.coordinates.forEach(coordinate => {
+//         const [longitude, latitude, intensity] = coordinate;
+//         if (intensity > 2) {
+//             const lineCoordinates = [[longitude, latitude, 0], [longitude, latitude, 600000]];
+//             const lineOptions = { geometry: lineCoordinates, color: 0x00ff00, width: 2 };
+//             const lineMesh = tb.line(lineOptions);
+//             tb.add(lineMesh);
+//         }
+//     });
+
+//     map.addLayer({
+// id: 'custom-threebox-model',
+// type: 'custom',
+// renderingMode: '3d',
+// onAdd: function () {
+// // Creative Commons License attribution:  Metlife Building model by https://sketchfab.com/NanoRay
+// // https://sketchfab.com/3d-models/metlife-building-32d3a4a1810a4d64abb9547bb661f7f3
+// const scale = 30000.2;
+// const options = {
+// obj: 'https://docs.mapbox.com/mapbox-gl-js/assets/metlife-building.gltf',
+// type: 'gltf',
+// scale: { x: scale, y: scale, z: 2.7 },
+// units: 'meters',
+// rotation: { x: 90, y: -90, z: 0 }
+// };
+ 
+// tb.loadObj(options, (model) => {
+// model.setCoords([-73.976799, 40.754145]);
+// model.setRotation({ x: 0, y: 0, z: 241 });
+// tb.add(model);
+// });
+// },
+ 
+// render: function () {
+// tb.update();
+// }
+// });
+
+//     map.addLayer({
+// id: 'custom-threebox-model',
+// type: 'custom',
+// renderingMode: '3d',
+// onAdd: function () {
+// // Creative Commons License attribution:  Metlife Building model by https://sketchfab.com/NanoRay
+// // https://sketchfab.com/3d-models/metlife-building-32d3a4a1810a4d64abb9547bb661f7f3
+// const scale = 3000.2;
+// const options = {
+// obj: 'https://docs.mapbox.com/mapbox-gl-js/assets/metlife-building.gltf',
+// type: 'gltf',
+// scale: { x: scale, y: scale, z: 2.7 },
+// units: 'meters',
+// rotation: { x: 90, y: -90, z: 0 }
+// };
+ 
+// tb.loadObj(options, (model) => {
+// model.setCoords([-73.976799, 40.754145]);
+// model.setRotation({ x: 0, y: 0, z: 241 });
+// tb.add(model);
+// });
+// },
+ 
+// render: function () {
+// tb.update();
+// }
+// });
+
+    
 });
+
+//actions to execute onObjectMouseOver
+function onObjectMouseOver(e) {
+			console.log("ObjectMouseOver: " + e.detail.name);
+		}
+
+		//actions to execute onObjectMouseOut
+		function onObjectMouseOut(e) {
+			console.log("ObjectMouseOut: " + e.detail.name);
+		}
+
 </script>
  
 </body>
