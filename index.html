@@ -245,6 +245,46 @@ map.on('load', async () => {
 // }
 // });
 
+// Animation function to make the circles bounce
+function animateCircles() {
+        forecastData.coordinates.forEach(coordinate => {
+            const [longitude, latitude, intensity] = coordinate;
+            if (intensity > 2) {
+                // Generate a random bounce height between 10 and 100 meters
+                const bounceHeight = Math.random() * 90 + 10;
+
+                // Update the circle radius and coordinates to simulate bouncing
+                map.setPaintProperty('aurora-markers', 'circle-radius', [
+                    'match',
+                    ['get', 'intensity'],
+                    1, 1,
+                    2, 2,
+                    3, 3,
+                    1 // Default radius
+                ]);
+                map.getSource('aurora-markers').setData({
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        properties: {
+                            intensity: coordinate[2]
+                        },
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [longitude, latitude + bounceHeight] // Update the latitude to simulate bouncing
+                        }
+                    }]
+                });
+            }
+        });
+
+        // Repeat the animation every 1 second
+        setTimeout(animateCircles, 1000);
+    }
+
+    // Start the animation
+    animateCircles();
+
     
 });
 
